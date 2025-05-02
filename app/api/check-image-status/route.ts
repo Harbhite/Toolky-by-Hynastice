@@ -9,18 +9,41 @@ export async function GET(req: Request) {
   }
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.xai-3BAkMwrpU7c9QJAwJImOy3kXJh2qUzDedTZZS68ICE2NKE6epmxGq8gIU8GQFwjNnNUuGxFL5HKqiNH0}`,
-      },
-      body: JSON.stringify({
-        model: "llama3-70b-8192",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
-        temperature: 0.7,
-      }),
+import {
+  GoogleGenAI,
+} from '@google/genai';
+
+async function main() {
+  const ai = new GoogleGenAI({
+    apiKey: process.env.AIzaSyABSu-2JYYuzWraSsmbP8F_Kd0Dik9ZAs8,
+  });
+  const config = {
+    responseMimeType: 'text/plain',
+  };
+  const model = 'gemini-2.5-flash-preview-04-17';
+  const contents = [
+    {
+      role: 'user',
+      parts: [
+        {
+          text: `For every word, I want 20 synonyms and antonyms in tabular format`,
+        },
+      ],
+    },
+  ];
+
+  const response = await ai.models.generateContentStream({
+    model,
+    config,
+    contents,
+  });
+  for await (const chunk of response) {
+    console.log(chunk.text);
+  }
+}
+
+main();
+    
     })
     if (!response.ok) {
       const error = await response.json()
