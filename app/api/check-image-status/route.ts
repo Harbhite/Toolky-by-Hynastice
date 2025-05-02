@@ -9,12 +9,16 @@ export async function GET(req: Request) {
   }
 
   try {
-    const response = await fetch(`https://api.replicate.com/v1/predictions/${id}`, {
-      headers: {
-        Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-    })
+    const response = await fetch('https://api.x.ai/grok/v1/chat', { // Replace with actual Grok API endpoint
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.XAI_API_KEY}`, // Use xAI API key
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    query: "Your question or prompt here", // Adjust based on Grok API requirements
+    model: "grok-3" // Specify model if required
+  })
 
     if (!response.ok) {
       const error = await response.json()
