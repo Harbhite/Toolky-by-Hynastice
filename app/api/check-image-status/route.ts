@@ -9,13 +9,19 @@ export async function GET(req: Request) {
   }
 
   try {
-    const response = await fetch(`https://api.replicate.com/v1/predictions/${id}`, {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
       headers: {
-        Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
         "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.xai-3BAkMwrpU7c9QJAwJImOy3kXJh2qUzDedTZZS68ICE2NKE6epmxGq8gIU8GQFwjNnNUuGxFL5HKqiNH0}`,
       },
+      body: JSON.stringify({
+        model: "llama3-70b-8192",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: maxTokens,
+        temperature: 0.7,
+      }),
     })
-
     if (!response.ok) {
       const error = await response.json()
       return NextResponse.json({ detail: error.detail }, { status: response.status })
