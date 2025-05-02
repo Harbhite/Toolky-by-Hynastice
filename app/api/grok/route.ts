@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.XAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.xai-3BAkMwrpU7c9QJAwJImOy3kXJh2qUzDedTZZS68ICE2NKE6epmxGq8gIU8GQFwjNnNUuGxFL5HKqiNH0}`,
       },
       body: JSON.stringify({
         model: "llama3-70b-8192",
