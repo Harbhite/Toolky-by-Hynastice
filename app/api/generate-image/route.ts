@@ -4,15 +4,17 @@ export async function POST(req: Request) {
   const { prompt } = await req.json()
 
   try {
-    const response = await fetch("https://api.replicate.com/v1/predictions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
         "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.xai-3BAkMwrpU7c9QJAwJImOy3kXJh2qUzDedTZZS68ICE2NKE6epmxGq8gIU8GQFwjNnNUuGxFL5HKqiNH0}`,
       },
       body: JSON.stringify({
-        version: "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-        input: { prompt },
+        model: "llama3-70b-8192",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: maxTokens,
+        temperature: 0.7,
       }),
     })
 
