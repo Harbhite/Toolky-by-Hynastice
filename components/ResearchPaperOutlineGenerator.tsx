@@ -22,6 +22,7 @@ export default function ResearchPaperOutlineGenerator() {
     setOutline(null)
 
     try {
+      console.log("Sending request to Grok API...")
       const response = await fetch("/api/grok", {
         method: "POST",
         headers: {
@@ -29,32 +30,43 @@ export default function ResearchPaperOutlineGenerator() {
         },
         body: JSON.stringify({
           prompt: `Generate a detailed research paper outline for the following topic: "${topic}".
-          ${keywords ? `Include these keywords or concepts: ${keywords}.` : ""}
-          The outline should include:
-          1. Introduction with background information and thesis statement
-          2. Literature Review section
-          3. Methodology section
-          4. Results section
-          5. Discussion section
-          6. Conclusion
-          7. References section
-          
-          Format the outline with Roman numerals for main sections (I, II, III), capital letters for subsections (A, B, C), 
-          and numbers for points under subsections (1, 2, 3).
-          Make it detailed enough for a college-level research paper.`,
-          maxTokens: 1500,
+        ${keywords ? `Include these keywords or concepts: ${keywords}.` : ""}
+        The outline should include:
+        1. Introduction with background information and thesis statement
+        2. Literature Review section
+        3. Methodology section
+        4. Results section
+        5. Discussion section
+        6. Conclusion
+        7. References section
+        
+        Format the outline with Roman numerals for main sections (I, II, III), capital letters for subsections (A, B, C), 
+        and numbers for points under subsections (1, 2, 3).
+        Make it detailed enough for a college-level research paper.`,
+          maxTokens: 1000,
         }),
       })
 
+      console.log("Response status:", response.status)
+
       if (!response.ok) {
-        throw new Error("Failed to generate outline")
+        const errorData = await response.json().catch(() => ({}))
+        console.error("API error response:", errorData)
+        throw new Error(`API returned ${response.status}: ${errorData.error || response.statusText}`)
       }
 
       const data = await response.json()
+      console.log("Received data from API")
+
+      if (!data.text) {
+        console.error("Invalid response format:", data)
+        throw new Error("Invalid response format from API")
+      }
+
       setOutline(data.text)
     } catch (err) {
       console.error("Error generating outline:", err)
-      setError("Failed to generate outline. Please try again.")
+      setError(`Failed to generate outline: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
       setLoading(false)
     }

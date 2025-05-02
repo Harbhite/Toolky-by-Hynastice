@@ -8,6 +8,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
+    console.log("Sending request to Grok API with prompt:", prompt.substring(0, 100) + "...")
+
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -22,15 +24,40 @@ export async function POST(req: Request) {
       }),
     })
 
+    console.log("Grok API response status:", response.status)
+
     if (!response.ok) {
-      const error = await response.json()
-      return NextResponse.json({ error: error.error.message }, { status: response.status })
+      const errorText = await response.text()
+      console.error("Grok API error response:", errorText)
+
+      let errorMessage = "Unknown error from Grok API"
+      try {
+        const errorJson = JSON.parse(errorText)
+        errorMessage = errorJson.error?.message || errorJson.message || errorMessage
+      } catch (e) {
+        // If parsing fails, use the raw error text
+        errorMessage = errorText || errorMessage
+      }
+
+      return NextResponse.json({ error: errorMessage }, { status: response.status })
     }
 
     const data = await response.json()
+    console.log("Received response from Grok API")
+
+    if (!data.choices || !data.choices[0]?.message?.content) {
+      console.error("Invalid response format from Grok API:", data)
+      return NextResponse.json({ error: "Invalid response format from Grok API" }, { status: 500 })
+    }
+
     return NextResponse.json({ text: data.choices[0].message.content })
   } catch (error) {
     console.error("Error in Grok API route:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
+      { status: 500 },
+    )
   }
 }
