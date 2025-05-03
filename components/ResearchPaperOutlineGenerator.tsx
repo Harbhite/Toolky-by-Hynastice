@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
+import { callGeminiApi, getGeminiApiKey } from "@/lib/gemini"
+import GeminiApiKeyForm from "./GeminiApiKeyForm"
 
 export default function ResearchPaperOutlineGenerator() {
   const [topic, setTopic] = useState("")
@@ -22,54 +24,51 @@ export default function ResearchPaperOutlineGenerator() {
     setOutline(null)
 
     try {
-      console.log("Sending request to Grok API...")
-      const response = await fetch("/api/grok", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: `Generate a detailed research paper outline for the following topic: "${topic}".
-        ${keywords ? `Include these keywords or concepts: ${keywords}.` : ""}
-        The outline should include:
-        1. Introduction with background information and thesis statement
-        2. Literature Review section
-        3. Methodology section
-        4. Results section
-        5. Discussion section
-        6. Conclusion
-        7. References section
-        
-        Format the outline with Roman numerals for main sections (I, II, III), capital letters for subsections (A, B, C), 
-        and numbers for points under subsections (1, 2, 3).
-        Make it detailed enough for a college-level research paper.`,
-          maxTokens: 1000,
-        }),
-      })
+      const apiKey = getGeminiApiKey()
 
-      console.log("Response status:", response.status)
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error("API error response:", errorData)
-        throw new Error(`API returned ${response.status}: ${errorData.error || response.statusText}`)
+      if (!apiKey) {
+        setError("Please add your Google Gemini API key first")
+        setLoading(false)
+        return
       }
 
-      const data = await response.json()
-      console.log("Received data from API")
+      const prompt = `Generate a detailed research paper outline for the following topic: "${topic}".
+      ${keywords ? `Include these keywords or concepts: ${keywords}.` : ""}
+      The outline should include:
+      1. Introduction with background information and thesis statement
+      2. Literature Review section
+      3. Methodology section
+      4. Results section
+      5. Discussion section
+      6. Conclusion
+      7. References section
+      
+      Format the outline with Roman numerals for main sections (I, II, III), capital letters for subsections (A, B, C), 
+      and numbers for points under subsections (1, 2, 3).
+      Make it detailed enough for a college-level research paper.`
 
-      if (!data.text) {
-        console.error("Invalid response format:", data)
-        throw new Error("Invalid response format from API")
-      }
-
-      setOutline(data.text)
+      const result = await callGeminiApi(prompt, 1500)
+      setOutline(result)
     } catch (err) {
       console.error("Error generating outline:", err)
       setError(`Failed to generate outline: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
       setLoading(false)
     }
+  }
+
+  const apiKey = typeof window !== "undefined" ? localStorage.getItem("gemini-api-key") : null
+
+  if (!apiKey) {
+    return (
+      <div className="space-y-4 p-4 bg-green-200 dark:bg-green-900 border-4 border-black dark:border-green-300 shadow-brutal dark:shadow-brutal-dark">
+        <h2 className="text-2xl font-bold dark:text-white">Research Paper Outline Generator</h2>
+        <p className="mb-4 dark:text-white">
+          To generate research paper outlines, you need to add your Google Gemini API key.
+        </p>
+        <GeminiApiKeyForm />
+      </div>
+    )
   }
 
   return (

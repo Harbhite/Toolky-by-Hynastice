@@ -1,29 +1,29 @@
 "use client"
 
-import { useState } from 'react'
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function EffectSizeCalculator() {
-  const [mean1, setMean1] = useState('')
-  const [mean2, setMean2] = useState('')
-  const [sd1, setSd1] = useState('')
-  const [sd2, setSd2] = useState('')
-  const [effectSize, setEffectSize] = useState('')
+  const [mean1, setMean1] = useState("")
+  const [mean2, setMean2] = useState("")
+  const [sd1, setSd1] = useState("")
+  const [sd2, setSd2] = useState("")
+  const [effectSize, setEffectSize] = useState("")
 
   const calculateEffectSize = () => {
-    const m1 = parseFloat(mean1)
-    const m2 = parseFloat(mean2)
-    const s1 = parseFloat(sd1)
-    const s2 = parseFloat(sd2)
+    const m1 = Number.parseFloat(mean1)
+    const m2 = Number.parseFloat(mean2)
+    const s1 = Number.parseFloat(sd1)
+    const s2 = Number.parseFloat(sd2)
 
     if (isNaN(m1) || isNaN(m2) || isNaN(s1) || isNaN(s2)) {
-      setEffectSize('Invalid input')
+      setEffectSize("Invalid input")
       return
     }
 
-    const pooledSD = Math.sqrt(((s1 * s1 + s2 * s2) / 2))
+    const pooledSD = Math.sqrt((s1 * s1 + s2 * s2) / 2)
     const cohensD = Math.abs(m1 - m2) / pooledSD
     setEffectSize(cohensD.toFixed(4))
   }

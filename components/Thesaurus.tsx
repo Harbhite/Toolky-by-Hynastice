@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
+import { callGeminiApi, getGeminiApiKey } from "@/lib/gemini"
+import GeminiApiKeyForm from "./GeminiApiKeyForm"
 
 export default function Thesaurus() {
   const [word, setWord] = useState("")
@@ -22,35 +24,30 @@ export default function Thesaurus() {
     setAntonyms([])
 
     try {
-      const response = await fetch("/api/grok", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: `I need synonyms and antonyms for the word "${word}". 
-          Please provide exactly 10 synonyms and 5 antonyms if possible.
-          Format your response as a JSON object with two arrays: "synonyms" and "antonyms".
-          Example: {"synonyms": ["word1", "word2", ...], "antonyms": ["word1", "word2", ...]}`,
-          maxTokens: 500,
-        }),
-      })
+      const apiKey = getGeminiApiKey()
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch synonyms and antonyms")
+      if (!apiKey) {
+        setError("Please add your Google Gemini API key first")
+        setLoading(false)
+        return
       }
 
-      const data = await response.json()
+      const prompt = `I need synonyms and antonyms for the word "${word}". 
+      Please provide exactly 10 synonyms and 5 antonyms if possible.
+      Format your response as a JSON object with two arrays: "synonyms" and "antonyms".
+      Example: {"synonyms": ["word1", "word2", ...], "antonyms": ["word1", "word2", ...]}`
+
+      const result = await callGeminiApi(prompt, 500)
 
       try {
         // Parse the JSON from the AI response
-        const parsedData = JSON.parse(data.text)
+        const parsedData = JSON.parse(result)
         setSynonyms(parsedData.synonyms || [])
         setAntonyms(parsedData.antonyms || [])
       } catch (parseError) {
         // If parsing fails, try to extract words using regex
-        const synonymMatches = data.text.match(/synonyms"?\s*:?\s*\[([^\]]+)\]/i)
-        const antonymMatches = data.text.match(/antonyms"?\s*:?\s*\[([^\]]+)\]/i)
+        const synonymMatches = result.match(/synonyms"?\s*:?\s*\[([^\]]+)\]/i)
+        const antonymMatches = result.match(/antonyms"?\s*:?\s*\[([^\]]+)\]/i)
 
         if (synonymMatches && synonymMatches[1]) {
           setSynonyms(synonymMatches[1].split(/,\s*/).map((w) => w.replace(/"/g, "").trim()))
@@ -62,10 +59,22 @@ export default function Thesaurus() {
       }
     } catch (err) {
       console.error("Error fetching synonyms and antonyms:", err)
-      setError("Failed to fetch synonyms and antonyms. Please try again.")
+      setError(`Failed to fetch synonyms and antonyms: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
       setLoading(false)
     }
+  }
+
+  const apiKey = typeof window !== "undefined" ? localStorage.getItem("gemini-api-key") : null
+
+  if (!apiKey) {
+    return (
+      <div className="w-full max-w-2xl mx-auto p-4 bg-purple-200 dark:bg-purple-900 border-4 border-black dark:border-purple-300 shadow-brutal dark:shadow-brutal-dark">
+        <h2 className="text-2xl font-bold mb-4 dark:text-white">Thesaurus</h2>
+        <p className="mb-4 dark:text-white">To use the Thesaurus, you need to add your Google Gemini API key.</p>
+        <GeminiApiKeyForm />
+      </div>
+    )
   }
 
   return (

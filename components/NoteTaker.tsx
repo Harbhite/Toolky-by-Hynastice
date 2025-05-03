@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import FileSaver from "file-saver"
-import { Document, Packer, Paragraph, TextRun } from "docx"
+import dynamic from "next/dynamic"
 
 // Define a placeholder component for the editor
 const QuillEditorPlaceholder = () => (
@@ -18,9 +17,6 @@ const ReactQuill = dynamic(() => import("react-quill"), {
   ssr: false,
   loading: QuillEditorPlaceholder,
 })
-
-// Import dynamic from next/dynamic
-import dynamic from "next/dynamic"
 
 // Import the CSS for Quill
 import "react-quill/dist/quill.snow.css"
@@ -86,22 +82,15 @@ export default function NoteTaker() {
 
   const downloadNote = () => {
     const noteText = notes[currentNote].content.replace(/<[^>]+>/g, "")
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [
-            new Paragraph({
-              children: [new TextRun(noteText)],
-            }),
-          ],
-        },
-      ],
-    })
-
-    Packer.toBlob(doc).then((blob) => {
-      FileSaver.saveAs(blob, `${notes[currentNote].title || "Untitled"}.docx`)
-    })
+    const blob = new Blob([noteText], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${notes[currentNote].title || "Untitled"}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -129,7 +118,7 @@ export default function NoteTaker() {
           onClick={downloadNote}
           className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-800 active:border-t-4 active:border-b-0 transition-all duration-100"
         >
-          Download as .docx
+          Download as .txt
         </Button>
       </div>
       <div className="border-4 border-black bg-white" style={{ height: "500px" }}>

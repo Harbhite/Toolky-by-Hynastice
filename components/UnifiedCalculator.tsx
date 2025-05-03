@@ -1,48 +1,47 @@
 "use client"
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import BasicCalculator from './BasicCalculator'
-import ScientificCalculator from './ScientificCalculator'
-import GraphingCalculator from './GraphingCalculator'
-import StatisticalPowerCalculator from './StatisticalPowerCalculator'
-import EffectSizeCalculator from './EffectSizeCalculator'
-import ConfidenceIntervalCalculator from './ConfidenceIntervalCalculator'
-import PValueCalculator from './PValueCalculator'
-import ANOVACalculator from './ANOVACalculator'
+import BasicCalculator from "./BasicCalculator"
+import ScientificCalculator from "./ScientificCalculator"
+import GraphingCalculator from "./GraphingCalculator"
+import StatisticalPowerCalculator from "./StatisticalPowerCalculator"
+import EffectSizeCalculator from "./EffectSizeCalculator"
+import ConfidenceIntervalCalculator from "./ConfidenceIntervalCalculator"
+import PValueCalculator from "./PValueCalculator"
+import ANOVACalculator from "./ANOVACalculator"
 
 const calculatorTypes = [
-  { value: 'basic', label: 'Basic Calculator' },
-  { value: 'scientific', label: 'Scientific Calculator' },
-  { value: 'graphing', label: 'Graphing Calculator' },
-  { value: 'statistical-power', label: 'Statistical Power Calculator' },
-  { value: 'effect-size', label: 'Effect Size Calculator' },
-  { value: 'confidence-interval', label: 'Confidence Interval Calculator' },
-  { value: 'p-value', label: 'P-value Calculator' },
-  { value: 'anova', label: 'ANOVA Calculator' },
+  { value: "basic", label: "Basic Calculator" },
+  { value: "scientific", label: "Scientific Calculator" },
+  { value: "graphing", label: "Graphing Calculator" },
+  { value: "statistical-power", label: "Statistical Power Calculator" },
+  { value: "effect-size", label: "Effect Size Calculator" },
+  { value: "confidence-interval", label: "Confidence Interval Calculator" },
+  { value: "p-value", label: "P-value Calculator" },
+  { value: "anova", label: "ANOVA Calculator" },
 ]
 
 export default function UnifiedCalculator() {
-  const [calculatorType, setCalculatorType] = useState('basic')
+  const [calculatorType, setCalculatorType] = useState("basic")
 
   const renderCalculator = () => {
     switch (calculatorType) {
-      case 'basic':
+      case "basic":
         return <BasicCalculator />
-      case 'scientific':
+      case "scientific":
         return <ScientificCalculator />
-      case 'graphing':
+      case "graphing":
         return <GraphingCalculator />
-      case 'statistical-power':
+      case "statistical-power":
         return <StatisticalPowerCalculator />
-      case 'effect-size':
+      case "effect-size":
         return <EffectSizeCalculator />
-      case 'confidence-interval':
+      case "confidence-interval":
         return <ConfidenceIntervalCalculator />
-      case 'p-value':
+      case "p-value":
         return <PValueCalculator />
-      case 'anova':
+      case "anova":
         return <ANOVACalculator />
       default:
         return <BasicCalculator />

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2 } from "lucide-react"
+import { callGeminiApi, getGeminiApiKey } from "@/lib/gemini"
+import GeminiApiKeyForm from "./GeminiApiKeyForm"
 
 interface Message {
   text: string
@@ -34,41 +36,41 @@ export default function WhatsAppBot() {
       setIsLoading(true)
 
       try {
-        // Get AI response
-        const response = await fetch("/api/grok", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prompt: `You are a helpful student assistant bot. Respond to the following message in a friendly, concise way. 
-            Focus on providing academic help and study tips. Keep your response under 150 words.
-            
-            User message: "${input}"
-            
-            Previous conversation context:
-            ${messages
-              .slice(-5)
-              .map((m) => `${m.isUser ? "User" : "Bot"}: ${m.text}`)
-              .join("\n")}`,
-            maxTokens: 500,
-          }),
-        })
+        const apiKey = getGeminiApiKey()
 
-        if (!response.ok) {
-          throw new Error("Failed to get response")
+        if (!apiKey) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: "Please add your Google Gemini API key in the settings to use this feature.",
+              isUser: false,
+            },
+          ])
+          setIsLoading(false)
+          return
         }
 
-        const data = await response.json()
+        const prompt = `You are a helpful student assistant bot. Respond to the following message in a friendly, concise way. 
+        Focus on providing academic help and study tips. Keep your response under 150 words.
+        
+        User message: "${input}"
+        
+        Previous conversation context:
+        ${messages
+          .slice(-5)
+          .map((m) => `${m.isUser ? "User" : "Bot"}: ${m.text}`)
+          .join("\n")}`
+
+        const result = await callGeminiApi(prompt, 500)
 
         // Add bot response
-        setMessages((prev) => [...prev, { text: data.text, isUser: false }])
+        setMessages((prev) => [...prev, { text: result, isUser: false }])
       } catch (error) {
         console.error("Error getting bot response:", error)
         setMessages((prev) => [
           ...prev,
           {
-            text: "Sorry, I'm having trouble connecting right now. Please try again later.",
+            text: `Sorry, I'm having trouble connecting right now: ${error instanceof Error ? error.message : "Unknown error"}`,
             isUser: false,
           },
         ])
@@ -76,6 +78,24 @@ export default function WhatsAppBot() {
         setIsLoading(false)
       }
     }
+  }
+
+  const apiKey = typeof window !== "undefined" ? localStorage.getItem("gemini-api-key") : null
+
+  if (!apiKey) {
+    return (
+      <div className="flex flex-col h-[600px] max-w-md mx-auto border-4 border-black dark:border-green-300 bg-green-200 dark:bg-green-900 shadow-brutal dark:shadow-brutal-dark">
+        <div className="bg-green-500 dark:bg-green-700 p-4 border-b-4 border-black dark:border-green-300">
+          <h2 className="text-2xl font-bold text-white">Student Tools WhatsApp Bot</h2>
+        </div>
+        <div className="flex-grow p-4 flex flex-col justify-center items-center">
+          <p className="mb-4 text-center dark:text-white">
+            To use the WhatsApp Bot, you need to add your Google Gemini API key.
+          </p>
+          <GeminiApiKeyForm />
+        </div>
+      </div>
+    )
   }
 
   return (

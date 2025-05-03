@@ -1,22 +1,28 @@
 "use client"
 
-import { useState } from 'react'
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
 export default function ANOVACalculator() {
-  const [groupData, setGroupData] = useState('')
+  const [groupData, setGroupData] = useState("")
   const [results, setResults] = useState<any>(null)
 
   const calculateANOVA = () => {
-    const groups = groupData.split('\n').map(group => 
-      group.split(',').map(Number).filter(n => !isNaN(n))
-    ).filter(group => group.length > 0)
+    const groups = groupData
+      .split("\n")
+      .map((group) =>
+        group
+          .split(",")
+          .map(Number)
+          .filter((n) => !isNaN(n)),
+      )
+      .filter((group) => group.length > 0)
 
     if (groups.length < 2) {
-      setResults('Need at least two groups')
+      setResults("Need at least two groups")
       return
     }
 
@@ -46,7 +52,7 @@ export default function ANOVACalculator() {
       ssTotal: totalSS.toFixed(4),
       msBetween: msBetween.toFixed(4),
       msWithin: msWithin.toFixed(4),
-      fRatio: fRatio.toFixed(4)
+      fRatio: fRatio.toFixed(4),
     })
   }
 
